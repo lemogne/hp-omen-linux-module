@@ -1246,7 +1246,7 @@ static struct platform_driver hp_wmi_driver = {
     .name = "hp-wmi",
     .pm = &hp_wmi_pm_ops,
   },
-  .remove = __exit_p(hp_wmi_bios_remove),
+  .remove = (void (*)(struct platform_device *))__exit_p(hp_wmi_bios_remove),
 };
 
 static int __init hp_wmi_init(void)
