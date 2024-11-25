@@ -544,55 +544,34 @@ static DEVICE_ATTR_RO(dock);
 static DEVICE_ATTR_RO(tablet);
 static DEVICE_ATTR_RW(postcode);
 
-static void hp_wmi_notify(u32 value, void *context)
+static void hp_wmi_notify(union acpi_object * obj, void *context)
 {
-  struct acpi_buffer response = { ACPI_ALLOCATE_BUFFER, NULL };
   u32 event_id, event_data;
-  union acpi_object *obj;
   acpi_status status;
   u32 *location;
   int key_code;
 
-  status = wmi_get_event_data(value, &response);
-  if (status == AE_NOT_FOUND)
-  {
-    // We've been woken up without any event data
-    // Some models do this when the Omen hotkey is pressed
-    event_id = HPWMI_OMEN_KEY;
-  }
-  else if (status != AE_OK) {
-    pr_info("bad event value 0x%x status 0x%x\n", value, status);
+  if (!obj)
+    return;
+  if (obj->type != ACPI_TYPE_BUFFER) {
+    pr_info("Unknown response received %d\n", obj->type);
     return;
   }
-  else
-  {
-    obj = (union acpi_object *)response.pointer;
 
-    if (!obj)
-      return;
-    if (obj->type != ACPI_TYPE_BUFFER) {
-      pr_info("Unknown response received %d\n", obj->type);
-      kfree(obj);
-      return;
-    }
-
-    /*
-    * Depending on ACPI version the concatenation of id and event data
-    * inside _WED function will result in a 8 or 16 byte buffer.
-    */
-    location = (u32 *)obj->buffer.pointer;
-    if (obj->buffer.length == 8) {
-      event_id = *location;
-      event_data = *(location + 1);
-    } else if (obj->buffer.length == 16) {
-      event_id = *location;
-      event_data = *(location + 2);
-    } else {
-      pr_info("Unknown buffer length %d\n", obj->buffer.length);
-      kfree(obj);
-      return;
-    }
-    kfree(obj);
+  /*
+  * Depending on ACPI version the concatenation of id and event data
+  * inside _WED function will result in a 8 or 16 byte buffer.
+  */
+  location = (u32 *)obj->buffer.pointer;
+  if (obj->buffer.length == 8) {
+    event_id = *location;
+    event_data = *(location + 1);
+  } else if (obj->buffer.length == 16) {
+    event_id = *location;
+    event_data = *(location + 2);
+  } else {
+    pr_info("Unknown buffer length %d\n", obj->buffer.length);
+    return;
   }
 
   switch (event_id) {
