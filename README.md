@@ -3,7 +3,7 @@ HP Omen special feature control for Linux
 
 This is a version of the hp-wmi kernel module that implements some of the features of HP Omen Command Centre.
 
-It's totally experimental right now, and could easily crash your machine. 
+It's totally experimental right now, and could easily crash your machine. *(now updated to the 7.0 kernel!)*
 
 **USE AT YOUR OWN RISK**
 
@@ -33,5 +33,4 @@ Omen and other hotkeys are bound to regular X11 keysyms, use your chosen desktop
 ## To do:
 
 - [ ] FourZone brightness control
-- [ ] Fan control 
 
